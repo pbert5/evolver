@@ -19,6 +19,35 @@ serial_connection = None
 command_queue = []
 sio = socketio.AsyncServer(async_handlers=True)
 
+
+class MockSerial:
+    def __init__(self, conf):
+        self.conf = conf
+        self.last_param = None
+
+    def reset_input_buffer(self):
+        pass
+
+    def reset_output_buffer(self):
+        pass
+
+    def write(self, data):
+        message = data.decode('UTF-8', errors='ignore')
+        for param in self.conf['experimental_params']:
+            if message.startswith(param):
+                self.last_param = param
+                break
+
+    def readline(self):
+        param = self.last_param
+        if param is None:
+            return b''
+        field_count = self.conf['experimental_params'][param]['fields_expected_incoming']
+        values = [self.conf['data_response_char']] + ['0'] * (field_count - 1)
+        response = param + ','.join(values) + ',' + self.conf['serial_end_incoming']
+        return bytes(response, 'UTF-8')
+
+
 class EvolverSerialError(Exception):
     pass
 
@@ -328,7 +357,15 @@ def attach(app, conf):
     evolver_conf = conf
 
     # Set up the serial comms
-    serial_connection = serial.Serial(port=evolver_conf['serial_port'], baudrate = evolver_conf['serial_baudrate'], timeout = evolver_conf['serial_timeout'])
+    try:
+        serial_connection = serial.Serial(port=evolver_conf['serial_port'], baudrate = evolver_conf['serial_baudrate'], timeout = evolver_conf['serial_timeout'])
+    except serial.serialutil.SerialException:
+        mock_serial = os.environ.get('EVOLVER_MOCK_SERIAL', 'auto').lower()
+        if mock_serial in ('1', 'true', 'yes', 'auto'):
+            print('Serial port unavailable; using mock serial connection', flush=True)
+            serial_connection = MockSerial(evolver_conf)
+        else:
+            raise
 
 def get_num_commands():
     global command_queue

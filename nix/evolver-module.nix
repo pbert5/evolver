@@ -88,6 +88,7 @@ in
 
       environment = {
         EVOLVER_DATA_DIR = cfg.stateDir;
+        EVOLVER_MOCK_SERIAL = "false";
         HOME = cfg.stateDir;
       };
 

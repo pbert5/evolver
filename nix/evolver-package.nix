@@ -79,8 +79,17 @@ let
     name = "evolver-server";
     runtimeInputs = [ pythonEnv ];
     text = ''
-      DATA_DIR="''${EVOLVER_DATA_DIR:-/var/lib/evolver}"
+      if [ -n "''${EVOLVER_DATA_DIR:-}" ]; then
+        DATA_DIR="$EVOLVER_DATA_DIR"
+      elif [ -n "''${XDG_STATE_HOME:-}" ]; then
+        DATA_DIR="$XDG_STATE_HOME/evolver"
+      elif [ -n "''${HOME:-}" ]; then
+        DATA_DIR="$HOME/.local/state/evolver"
+      else
+        DATA_DIR="$PWD/.evolver-state"
+      fi
       export EVOLVER_DATA_DIR="$DATA_DIR"
+      export EVOLVER_MOCK_SERIAL="''${EVOLVER_MOCK_SERIAL:-auto}"
 
       mkdir -p "$DATA_DIR"
 
