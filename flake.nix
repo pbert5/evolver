@@ -294,6 +294,7 @@ print(f'Exported to $OUT')
           } ''
             cp -r "$src/evolver" evolver
             cp -r "$src/tests" tests
+            chmod -R u+w evolver tests
             touch evolver/__init__.py tests/__init__.py
             PYTHONPATH="$PWD:$PWD/evolver" pytest tests/ -v --ignore=tests/hardware
             touch $out

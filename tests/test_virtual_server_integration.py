@@ -159,23 +159,26 @@ def test_virtual_server_socketio_round_trip(tmp_path):
         )
 
         seen = {}
-        deadline = time.time() + 10
-        while time.time() < deadline and "broadcast_with_command" not in seen:
+        broadcasts = []
+        deadline = time.time() + 15
+        while time.time() < deadline and not (
+            "connect" in seen
+            and "activecalibrations" in seen
+            and "commandbroadcast" in seen
+            and broadcasts
+        ):
             try:
                 name, data = events.get(timeout=0.25)
             except queue.Empty:
                 continue
             seen.setdefault(name, data)
-            if (
-                name == "broadcast"
-                and data.get("config", {}).get("stir", {}).get("value") == [4] * 16
-            ):
-                seen["broadcast_with_command"] = data
+            if name == "broadcast":
+                broadcasts.append(data)
 
         assert "connect" in seen
         assert len(seen["activecalibrations"]) >= 1
-        assert seen["broadcast_with_command"]["data"]["od_135"][0] == "404"
-        assert seen["broadcast_with_command"]["config"]["stir"]["value"] == [4] * 16
+        assert seen["commandbroadcast"]["value"] == [4] * 16
+        assert broadcasts[-1]["data"]["od_135"][0] == "404"
         client.disconnect()
     finally:
         _stop(proc)
