@@ -70,7 +70,36 @@
             name = "run-virtual-evolver";
             text = ''
               export EVOLVER_OUTPUT_MODE="''${EVOLVER_OUTPUT_MODE:-virtual}"
+              export EVOLVER_BIND_HOST="''${EVOLVER_BIND_HOST:-127.0.0.1}"
               exec ${run-server}/bin/run-server "$@"
+            '';
+          };
+
+          run-dpu = pkgs.writeShellApplication {
+            name = "run-dpu";
+            runtimeInputs = [ pkgs.nix ];
+            text = ''
+              set -euo pipefail
+              DPU_DIR="''${EVOLVER_DPU_DIR:-../dpu}"
+              if [ ! -f "$DPU_DIR/flake.nix" ] || [ ! -f "$DPU_DIR/pyproject.toml" ]; then
+                echo "ERROR: DPU checkout not found at $DPU_DIR"
+                echo "Set EVOLVER_DPU_DIR=/path/to/dpu or run from a workspace with ../dpu."
+                exit 1
+              fi
+              cd "$DPU_DIR"
+              exec nix run .#run-dpu -- "$@"
+            '';
+          };
+
+          test-virtual-dpu = pkgs.writeShellApplication {
+            name = "test-virtual-dpu";
+            runtimeInputs = [
+              pkgs.nix
+              pkgs.python3
+            ];
+            text = ''
+              export EVOLVER_REPO_ROOT="$PWD"
+              exec python ${./tests/integration_virtual_dpu.py} "$@"
             '';
           };
 
@@ -216,8 +245,15 @@ print(f'Exported to $OUT')
           "build-firmware" = evolver-arduino.apps.${system}."build-firmware";
           "upload-firmware" = evolver-arduino.apps.${system}."upload-firmware";
           "setup-arduino" = evolver-arduino.apps.${system}."setup-arduino";
-          # Forwarded from evolver-dpu
-          "run-dpu" = evolver-dpu.apps.${system}."run-dpu";
+          # Delegates to the sibling DPU checkout's own app.
+          "run-dpu" = {
+            type = "app";
+            program = "${run-dpu}/bin/run-dpu";
+          };
+          "test-virtual-dpu" = {
+            type = "app";
+            program = "${test-virtual-dpu}/bin/test-virtual-dpu";
+          };
 
           default = {
             type = "app";
@@ -236,6 +272,7 @@ print(f'Exported to $OUT')
           testPython = pkgs.python3.withPackages (ps: [
             ps.pytest
             ps.pyserial
+            ps.python-socketio
             ps.pyyaml
           ]);
         in

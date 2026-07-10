@@ -63,11 +63,24 @@ flake app:
 nix run .#setup-arduino
 ```
 
-Run the DPU experiment controller through the forwarded `evolver-dpu` flake
-app:
+Run the DPU experiment controller through the sibling DPU checkout's flake app:
 
 ```bash
 nix run .#run-dpu
+```
+
+The wrapper enters `../dpu` and runs `.#run-dpu` by default. Override the checkout location with
+`EVOLVER_DPU_DIR=/path/to/dpu` when needed.
+
+See [DPU_PLAYBOOK.md](DPU_PLAYBOOK.md) for virtual-server and hardware DPU
+workflows.
+
+Keep the pinned `evolver-arduino` and `evolver-dpu` flake inputs up to date
+when you need changes from those repositories:
+
+```bash
+nix flake update evolver-arduino
+nix flake update evolver-dpu
 ```
 
 ## Development Shells

@@ -27,6 +27,10 @@ if __name__ == '__main__':
     conf['evolver_ip'] = evolver_ip
     if os.environ.get('EVOLVER_SERIAL_PORT'):
         conf['serial_port'] = os.environ['EVOLVER_SERIAL_PORT']
+    if os.environ.get('EVOLVER_PORT'):
+        conf['port'] = int(os.environ['EVOLVER_PORT'])
+    if os.environ.get('EVOLVER_BROADCAST_TIMING'):
+        conf['broadcast_timing'] = float(os.environ['EVOLVER_BROADCAST_TIMING'])
 
     # Set up the server
     server_loop = asyncio.new_event_loop()

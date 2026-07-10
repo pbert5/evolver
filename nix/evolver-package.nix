@@ -101,6 +101,9 @@ let
         if [ -f "$src" ] && [ ! -f "$dst" ]; then
           cp "$src" "$dst"
         fi
+        if [ -f "$dst" ]; then
+          chmod u+w "$dst"
+        fi
       done
 
       export PYTHONPATH="${evolverSrc}/share/evolver''${PYTHONPATH:+:$PYTHONPATH}"

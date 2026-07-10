@@ -1,4 +1,5 @@
 import asyncio
+import os
 from aiohttp import web
 from threading import Thread
 
@@ -35,7 +36,8 @@ class MultiServer:
                 runner = web.AppRunner(app[0])
                 self.loop.run_until_complete(runner.setup())
 
-                site = web.TCPSite(runner, '0.0.0.0', app[1])
+                host = os.environ.get('EVOLVER_BIND_HOST', '0.0.0.0')
+                site = web.TCPSite(runner, host, app[1])
                 self.loop.run_until_complete(site.start())
 
                 names = sorted(str(s.name) for s in runner.sites)
