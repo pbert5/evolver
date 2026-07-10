@@ -9,7 +9,7 @@
 
 ## Python Workflow
 
-Use Serena for Python code navigation and edits.
+Use Serena for all Python interaction. This is explicit and mandatory: navigate Python with Serena, inspect Python symbols with Serena, and make Python symbol edits with Serena whenever a symbol-aware edit applies.
 
 - Prefer Serena symbol tools for Python files before reading whole source files.
 - Use symbol-aware edits for Python symbols when possible.
