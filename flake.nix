@@ -26,6 +26,21 @@
         "aarch64-linux"
       ];
       forAllSystems = nixpkgs.lib.genAttrs systems;
+      mkApp =
+        program: description:
+        {
+          type = "app";
+          inherit program;
+          meta.description = description;
+        };
+      withAppMeta =
+        app: description:
+        app
+        // {
+          meta = (app.meta or { }) // {
+            inherit description;
+          };
+        };
     in
     {
       # ---- Packages ----
@@ -221,44 +236,28 @@ print(f'Exported to $OUT')
           };
         in
         {
-          "run-server" = {
-            type = "app";
-            program = "${run-server}/bin/run-server";
-          };
-          "run-virtual-evolver" = {
-            type = "app";
-            program = "${run-virtual-evolver}/bin/run-virtual-evolver";
-          };
-          "discover-devices" = {
-            type = "app";
-            program = "${discover-devices}/bin/discover-devices";
-          };
-          "provision-device" = {
-            type = "app";
-            program = "${provision-device}/bin/provision-device";
-          };
-          "export-calibration" = {
-            type = "app";
-            program = "${export-calibration}/bin/export-calibration";
-          };
+          "run-server" = mkApp "${run-server}/bin/run-server" "Run the eVOLVER socket.io server.";
+          "run-virtual-evolver" =
+            mkApp "${run-virtual-evolver}/bin/run-virtual-evolver" "Run the eVOLVER server in virtual output mode.";
+          "discover-devices" =
+            mkApp "${discover-devices}/bin/discover-devices" "Discover connected eVOLVER serial devices.";
+          "provision-device" =
+            mkApp "${provision-device}/bin/provision-device" "Provision identity data onto an eVOLVER device.";
+          "export-calibration" =
+            mkApp "${export-calibration}/bin/export-calibration" "Export device calibration data.";
           # Forwarded from evolver-arduino
-          "build-firmware" = evolver-arduino.apps.${system}."build-firmware";
-          "upload-firmware" = evolver-arduino.apps.${system}."upload-firmware";
-          "setup-arduino" = evolver-arduino.apps.${system}."setup-arduino";
+          "build-firmware" =
+            withAppMeta evolver-arduino.apps.${system}."build-firmware" "Build eVOLVER Arduino firmware.";
+          "upload-firmware" =
+            withAppMeta evolver-arduino.apps.${system}."upload-firmware" "Upload eVOLVER Arduino firmware.";
+          "setup-arduino" =
+            withAppMeta evolver-arduino.apps.${system}."setup-arduino" "Set up Arduino tooling for eVOLVER firmware.";
           # Delegates to the sibling DPU checkout's own app.
-          "run-dpu" = {
-            type = "app";
-            program = "${run-dpu}/bin/run-dpu";
-          };
-          "test-virtual-dpu" = {
-            type = "app";
-            program = "${test-virtual-dpu}/bin/test-virtual-dpu";
-          };
+          "run-dpu" = mkApp "${run-dpu}/bin/run-dpu" "Run the DPU service from a sibling checkout.";
+          "test-virtual-dpu" =
+            mkApp "${test-virtual-dpu}/bin/test-virtual-dpu" "Run the virtual DPU integration smoke test.";
 
-          default = {
-            type = "app";
-            program = "${run-server}/bin/run-server";
-          };
+          default = mkApp "${run-server}/bin/run-server" "Run the eVOLVER socket.io server.";
         }
       );
 
