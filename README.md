@@ -45,6 +45,9 @@ Run the server with virtual desktop output instead of hardware serial data:
 nix run .#run-virtual-evolver
 ```
 
+See [VIRTUAL_SERVER.md](VIRTUAL_SERVER.md) for virtual-server behavior,
+limitations, and testing notes.
+
 By default, the Nix launcher stores mutable runtime files in the first
 available location:
 

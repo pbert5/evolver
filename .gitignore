@@ -110,3 +110,10 @@ venv.bak/
 
 calibrations/*
 /result
+
+# Serena project metadata is tracked; runtime cache/log state is not.
+.serena/cache/
+.serena/.cache/
+.serena/logs/
+.serena/tmp/
+.serena/project.local.yml
