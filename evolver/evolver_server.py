@@ -9,7 +9,10 @@ import os
 import yaml
 from traceback import print_exc
 
-LOCATION = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+LOCATION = os.path.realpath(
+    os.environ.get('EVOLVER_DATA_DIR')
+    or os.path.join(os.getcwd(), os.path.dirname(__file__))
+)
 IMMEDIATE = 'immediate_command_char'
 RECURRING = 'recurring_command_char'
 CALIBRATIONS_FILENAME = "calibrations.json"
@@ -87,7 +90,7 @@ async def on_command(sid, data):
 
 
     # Save to config the values sent in for the parameter
-    with open(os.path.realpath(os.path.join(os.getcwd(),os.path.dirname(__file__), evolver.CONF_FILENAME)), 'w') as ymlfile:
+    with open(evolver.conf_path(), 'w') as ymlfile:
         yaml.dump(evolver_conf, ymlfile)
 
     if immediate:

@@ -11,6 +11,15 @@ import os
 conf = {}
 CONF_FILENAME = 'conf.yml'
 
+def data_dir():
+    return os.path.realpath(
+        os.environ.get('EVOLVER_DATA_DIR')
+        or os.path.join(os.getcwd(), os.path.dirname(__file__))
+    )
+
+def conf_path():
+    return os.path.join(data_dir(), CONF_FILENAME)
+
 def start_background_loop(loop):
     asyncio.set_event_loop(loop)
     loop.run_forever()
@@ -27,7 +36,7 @@ if __name__ == '__main__':
             evolver_ip = "127.0.0.1"
         finally:
             s.close()
-    with open(os.path.realpath(os.path.join(os.getcwd(),os.path.dirname(__file__), CONF_FILENAME)), 'r') as ymlfile:
+    with open(conf_path(), 'r') as ymlfile:
         conf = yaml.safe_load(ymlfile)
 
     conf['evolver_ip'] = evolver_ip
