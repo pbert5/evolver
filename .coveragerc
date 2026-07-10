@@ -1,0 +1,7 @@
+[run]
+source = evolver
+omit =
+    evolver/socketIO_client/*
+
+[report]
+show_missing = True
