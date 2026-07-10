@@ -270,10 +270,14 @@ print(f'Exported to $OUT')
           pkgs = nixpkgs.legacyPackages.${system};
           lintPython = if pkgs ? python36 then pkgs.python36 else pkgs.python3;
           testPython = pkgs.python3.withPackages (ps: [
+            ps.aiohttp
             ps.pytest
             ps.pyserial
             ps.python-socketio
             ps.pyyaml
+            ps.requests
+            ps.six
+            ps.websocket-client
           ]);
         in
         {

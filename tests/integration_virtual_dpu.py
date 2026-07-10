@@ -176,6 +176,9 @@ def run_integration(dpu_dir=DEFAULT_DPU_DIR, timeout=120, stream=True):
 
 
 def test_virtual_dpu_smoke():
+    if os.environ.get("EVOLVER_RUN_DPU_SMOKE", "").lower() not in ("1", "true", "yes"):
+        import pytest
+        pytest.skip("set EVOLVER_RUN_DPU_SMOKE=1 to run the sibling DPU smoke test")
     run_integration(stream=False)
 
 

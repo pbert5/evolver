@@ -17,10 +17,16 @@ def start_background_loop(loop):
 
 if __name__ == '__main__':
     # need to get our IP
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.connect(("8.8.8.8", 80))
-    evolver_ip = s.getsockname()[0]
-    s.close()
+    evolver_ip = os.environ.get('EVOLVER_IP')
+    if evolver_ip is None:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            s.connect(("8.8.8.8", 80))
+            evolver_ip = s.getsockname()[0]
+        except OSError:
+            evolver_ip = "127.0.0.1"
+        finally:
+            s.close()
     with open(os.path.realpath(os.path.join(os.getcwd(),os.path.dirname(__file__), CONF_FILENAME)), 'r') as ymlfile:
         conf = yaml.safe_load(ymlfile)
 
