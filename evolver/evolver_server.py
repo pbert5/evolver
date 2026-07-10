@@ -356,6 +356,11 @@ def attach(app, conf):
     sio.attach(app)
     evolver_conf = conf
 
+    if is_virtual_output_enabled():
+        print('Using virtual eVOLVER output; serial connection disabled', flush=True)
+        serial_connection = MockSerial(evolver_conf)
+        return
+
     # Set up the serial comms
     try:
         serial_connection = serial.Serial(port=evolver_conf['serial_port'], baudrate = evolver_conf['serial_baudrate'], timeout = evolver_conf['serial_timeout'])
@@ -398,6 +403,48 @@ def sub_command(command_list, parameters):
             value = parameters[parameter]['value']
         command_queue.append({'param': parameter, 'value': value, 'type': IMMEDIATE})
 
+
+def is_virtual_output_enabled():
+    mode = os.environ.get('EVOLVER_OUTPUT_MODE', '').lower()
+    return mode in ('virtual', 'simulated', 'simulation')
+
+
+def _fit_virtual_values(values, expected_count):
+    if expected_count <= 0:
+        return []
+    if len(values) >= expected_count:
+        return values[:expected_count]
+    return values + [values[-1]] * (expected_count - len(values))
+
+
+def virtual_broadcast_data(conf):
+    """
+        Return desktop-safe virtual sensor output using the historical
+        virtual_evolver computer-branch sample values.
+    """
+    samples = {
+        'od_135': ['404', '405', '405', '405', '402', '403', '404', '403',
+                   '405', '403', '405', '404', '406', '404', '403', '403'],
+        'od_90': ['45294', '45491', '41809', '48285', '44203', '56908', '45052', '50669',
+                  '50110', '49631', '48796', '52508', '50900', '43329', '45269', '55678'],
+        'temp': ['1949', '1982', '1974', '1951', '1967', '1944', '2137', '1969',
+                 '1950', '1958', '1952', '1951', '1972', '1984', '1962', '1958'],
+    }
+    data = {}
+    for param, values in samples.items():
+        param_conf = conf.get('experimental_params', {}).get(param)
+        if param_conf is None:
+            continue
+        expected_count = param_conf.get('fields_expected_incoming', len(values) + 1) - 1
+        data[param] = _fit_virtual_values(values, expected_count)
+    return data
+
+
+async def run_virtual_commands():
+    global command_queue
+    command_queue = []
+    return virtual_broadcast_data(evolver_conf)
+
 async def broadcast(commands_in_queue):
     global command_queue
     broadcast_data = {}
@@ -406,7 +453,10 @@ async def broadcast(commands_in_queue):
         process_commands(evolver_conf['experimental_params'])
 
     # Always run commands so that IMMEDIATE requests occur. RECURRING requests only happen if no commands in queue
-    broadcast_data['data'] = await run_commands()
+    if is_virtual_output_enabled():
+        broadcast_data['data'] = await run_virtual_commands()
+    else:
+        broadcast_data['data'] = await run_commands()
     broadcast_data['config'] = evolver_conf['experimental_params']
     if not commands_in_queue:
         print('Broadcasting data', flush = True)

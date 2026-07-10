@@ -11,6 +11,13 @@ Run the eVOLVER hardware server:
 nix run .#run-server
 ```
 
+Run the server with desktop-safe virtual sensor output instead of serial
+hardware:
+
+```bash
+nix run .#run-virtual-evolver
+```
+
 Run the default app. This is the same as `run-server`:
 
 ```bash
@@ -139,6 +146,13 @@ $HOME/.local/state/evolver
 
 ```bash
 EVOLVER_SERIAL_PORT=/dev/ttyACM0 nix run .#run-server
+```
+
+`EVOLVER_OUTPUT_MODE=virtual` makes broadcasts use the integrated virtual
+eVOLVER output provider:
+
+```bash
+EVOLVER_OUTPUT_MODE=virtual nix run .#run-server
 ```
 
 `EVOLVER_MOCK_SERIAL` defaults to `auto` in the Nix launcher. Override it when

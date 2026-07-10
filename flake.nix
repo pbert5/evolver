@@ -66,6 +66,14 @@
             '';
           };
 
+          run-virtual-evolver = pkgs.writeShellApplication {
+            name = "run-virtual-evolver";
+            text = ''
+              export EVOLVER_OUTPUT_MODE="''${EVOLVER_OUTPUT_MODE:-virtual}"
+              exec ${run-server}/bin/run-server "$@"
+            '';
+          };
+
           discover-devices = pkgs.writeShellApplication {
             name = "discover-devices";
             runtimeInputs = [
@@ -188,6 +196,10 @@ print(f'Exported to $OUT')
             type = "app";
             program = "${run-server}/bin/run-server";
           };
+          "run-virtual-evolver" = {
+            type = "app";
+            program = "${run-virtual-evolver}/bin/run-virtual-evolver";
+          };
           "discover-devices" = {
             type = "app";
             program = "${discover-devices}/bin/discover-devices";
@@ -282,6 +294,7 @@ print(f'Exported to $OUT')
               echo "eVOLVER workspace dev shell"
               echo ""
               echo "Server:    nix run .#run-server"
+              echo "Virtual:   nix run .#run-virtual-evolver"
               echo "DPU:       nix run .#run-dpu       (run from evolver-dpu/ dir)"
               echo "Firmware:  nix run .#build-firmware (run from evolver-arduino/ dir)"
               echo "Upload:    PORT=/dev/ttyACM0 nix run .#upload-firmware"
