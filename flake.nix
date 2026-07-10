@@ -295,6 +295,16 @@ print(f'Exported to $OUT')
             PYTHONPATH="$PWD:$PWD/evolver" pytest tests/ -v --ignore=tests/hardware
             touch $out
           '';
+
+          virtual-dpu-smoke-entrypoint = pkgs.runCommand "virtual-dpu-smoke-entrypoint" {
+            nativeBuildInputs = [ pkgs.python3 ];
+            src = ./tests/integration_virtual_dpu.py;
+          } ''
+            cp "$src" integration_virtual_dpu.py
+            python -m py_compile integration_virtual_dpu.py
+            python integration_virtual_dpu.py --help >/dev/null
+            touch $out
+          '';
         }
       );
 
