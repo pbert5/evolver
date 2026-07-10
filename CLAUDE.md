@@ -16,15 +16,19 @@ committed and pushed there first, then the parent flake lock updated here.
 ## Required First Steps
 
 1. Call `mcp__serena__initial_instructions` and follow the Serena manual.
-2. Activate: `mcp__serena__activate_project` path `/home/ash/Documents/work/evolver`.
+2. Activate: `mcp__serena__activate_project` path `/home/ash/Documents/work/evolver_code/evolver`.
 3. Use `mcp__mcp-nixos__nix` for any Nix question (packages, options, versions,
    build failures, lock updates). Never guess nixpkgs package availability.
+4. Follow `/home/ash/.codex/RTK.md`: prefix shell commands with `rtk`.
 
 ## Serena Tool Usage
 
-Use Serena for all code navigation and editing in Python/Nix files.
-`get_symbols_overview` → `find_symbol(include_body=True)` → `replace_symbol_body`
-or `replace_content`. Do not use `Edit` on files you haven't read via the Read tool.
+Use Serena for Python code navigation and edits.
+
+- Prefer Serena symbol tools before reading whole Python source files.
+- Use symbol-aware edits for Python symbols when possible.
+- Use normal file tools for docs, shell scripts, Nix files, and other non-Python files.
+- Do not run hardware tests automatically.
 
 ## Repository Structure
 
