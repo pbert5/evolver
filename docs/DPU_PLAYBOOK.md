@@ -1,5 +1,16 @@
 # DPU Playbook
 
+The "DPU" is not a fixed piece of hardware or a dedicated machine. It is simply
+the Python process you run on any convenient computer — a laptop, lab workstation,
+or second Pi — to control an experiment. It is a socket.io **client** that connects
+to the eVOLVER server on the Raspberry Pi; the RPi server drives the timing and
+talks to the Arduino. The DPU has no server of its own.
+
+The only file you edit per experiment is `custom_script.py`. Set temperature, stir
+speed, OD thresholds, and operation mode there, then launch the DPU script. You can
+also write your own client in any language: connect to port 8081, listen for the
+`broadcast` socket.io event, and emit `command` events in response.
+
 This playbook covers running the DPU against the eVOLVER server from this
 workspace. Use the virtual server path for desktop development and the normal
 server path for hardware-connected experiments.

@@ -72,6 +72,11 @@ nix run .#run-dpu
 The wrapper enters `../dpu` and runs `.#run-dpu` by default. Override the checkout location with
 `EVOLVER_DPU_DIR=/path/to/dpu` when needed.
 
+The "DPU" is not a fixed machine — it is any computer running the experiment
+script. A laptop, lab workstation, or second Pi all work. The script is a
+socket.io client that connects to the RPi server; the server does not care what
+machine or language is on the other end.
+
 See [DPU_PLAYBOOK.md](DPU_PLAYBOOK.md) for virtual-server and hardware DPU
 workflows.
 
