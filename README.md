@@ -25,7 +25,7 @@ flake.nix                 Integrated Nix workspace
 
 ## Quick Start With Nix
 
-See [entrypoints.md](entrypoints.md) for the full command catalog.
+See [docs/entrypoints.md](docs/entrypoints.md) for the full command catalog.
 
 Enter the development shell:
 
@@ -45,7 +45,7 @@ Run the server with virtual desktop output instead of hardware serial data:
 nix run .#run-virtual-evolver
 ```
 
-See [VIRTUAL_SERVER.md](VIRTUAL_SERVER.md) for virtual-server behavior,
+See [docs/VIRTUAL_SERVER.md](docs/VIRTUAL_SERVER.md) for virtual-server behavior,
 limitations, and testing notes.
 
 By default, the Nix launcher stores mutable runtime files in the first
