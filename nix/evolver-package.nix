@@ -19,10 +19,8 @@ let
     ]
   );
 
-  # evolver Python source, patched so all mutable file paths honour the
-  # EVOLVER_DATA_DIR environment variable.  Without this the code would resolve
-  # paths relative to __file__ (the Nix store — read-only) instead of the
-  # writable state directory.
+  # evolver Python source. Runtime launchers initialise EVOLVER_DATA_DIR so
+  # mutable state stays outside the read-only Nix store.
   evolverSrc = stdenvNoCC.mkDerivation {
     pname = "evolver-src";
     version = "0.0.0";
@@ -41,28 +39,6 @@ let
 
     dontConfigure = true;
     dontBuild = true;
-
-    postPatch = ''
-      # evolver_server.py: make LOCATION (used for calibrations.json, device
-      # config, etc.) configurable via EVOLVER_DATA_DIR.
-      substituteInPlace evolver_server.py \
-        --replace-fail \
-          'LOCATION = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))' \
-          'LOCATION = os.environ.get("EVOLVER_DATA_DIR", os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__))))'
-
-      # evolver_server.py: the conf.yml *write* path uses __file__ directly;
-      # redirect it to use LOCATION (now configurable above).
-      substituteInPlace evolver_server.py \
-        --replace-fail \
-          'os.path.realpath(os.path.join(os.getcwd(),os.path.dirname(__file__), evolver.CONF_FILENAME))' \
-          'os.path.join(LOCATION, evolver.CONF_FILENAME)'
-
-      # evolver.py: the conf.yml *read* path also uses __file__; redirect it.
-      substituteInPlace evolver.py \
-        --replace-fail \
-          'os.path.realpath(os.path.join(os.getcwd(),os.path.dirname(__file__), CONF_FILENAME))' \
-          'os.path.join(os.environ.get("EVOLVER_DATA_DIR", os.path.dirname(os.path.realpath(__file__))), CONF_FILENAME)'
-    '';
 
     installPhase = ''
       runHook preInstall
