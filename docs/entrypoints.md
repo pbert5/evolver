@@ -25,6 +25,20 @@ nix run
 nix run .#default
 ```
 
+Run the local control-plane API. By default it listens on `127.0.0.1:8082`
+and forwards validated device commands to `http://127.0.0.1:8081`:
+
+```bash
+nix run .#run-control-plane
+```
+
+Persist broadcasts from the existing eVOLVER server into raw JSONL data
+streams:
+
+```bash
+nix run .#run-broadcast-ingest
+```
+
 Discover connected serial devices and report their provisioning state:
 
 ```bash
@@ -178,6 +192,20 @@ you need a specific serial mode:
 
 ```bash
 EVOLVER_MOCK_SERIAL=0 nix run .#run-server
+```
+
+`EVOLVER_CONTROL_HOST` and `EVOLVER_CONTROL_PORT` configure the local
+control-plane bind address:
+
+```bash
+EVOLVER_CONTROL_PORT=8082 nix run .#run-control-plane
+```
+
+`EVOLVER_HARDWARE_URL` points the control plane and broadcast ingester at the
+existing eVOLVER Socket.IO server:
+
+```bash
+EVOLVER_HARDWARE_URL=http://127.0.0.1:8081 nix run .#run-broadcast-ingest
 ```
 
 ## Legacy Entrypoints

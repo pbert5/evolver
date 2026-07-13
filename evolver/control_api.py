@@ -80,9 +80,15 @@ async def _create_experiment(request):
 
 async def _start_experiment(request):
     control_plane = request.app[CONTROL_PLANE_KEY]
+    runner_manager = request.app[RUNNER_MANAGER_KEY]
     try:
         body = await _read_json(request)
         runner_spec = body.get("runner", body)
+        runner_spec = start_runner_if_requested(
+            request.match_info["experiment_id"],
+            runner_spec,
+            runner_manager,
+        )
         experiment = control_plane.start_experiment(
             request.match_info["experiment_id"],
             runner_spec,
@@ -90,6 +96,31 @@ async def _start_experiment(request):
         return _json({"experiment": experiment})
     except _API_ERRORS as exc:
         return _error(exc)
+
+
+def start_runner_if_requested(experiment_id, runner_spec, runner_manager):
+    if runner_manager is None:
+        return runner_spec
+    if not isinstance(runner_spec, dict):
+        raise MessageValidationError("runner spec must be a JSON object")
+    if runner_spec.get("kind") != "dpu_subprocess":
+        return runner_spec
+
+    dpu_dir = runner_spec.get("dpu_dir")
+    if not dpu_dir:
+        raise MessageValidationError("dpu_subprocess runner requires dpu_dir")
+
+    runner_manager.start_dpu_runner(
+        experiment_id,
+        dpu_dir,
+        ip_address=runner_spec.get("ip_address"),
+        experiment_dir=runner_spec.get("experiment_dir"),
+        extra_args=runner_spec.get("extra_args"),
+        env=runner_spec.get("env"),
+    )
+    status = runner_manager.runner_status(experiment_id)
+    status["kind"] = "dpu_subprocess"
+    return status
 
 
 async def _pause_experiment(request):

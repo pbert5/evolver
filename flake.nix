@@ -90,6 +90,22 @@
             '';
           };
 
+          run-control-plane = pkgs.writeShellApplication {
+            name = "run-control-plane";
+            runtimeInputs = [ serverPython ];
+            text = ''
+              exec ${self.packages.${system}.evolver}/bin/evolver-control-plane "$@"
+            '';
+          };
+
+          run-broadcast-ingest = pkgs.writeShellApplication {
+            name = "run-broadcast-ingest";
+            runtimeInputs = [ serverPython ];
+            text = ''
+              exec ${self.packages.${system}.evolver}/bin/evolver-broadcast-ingest "$@"
+            '';
+          };
+
           run-dpu = pkgs.writeShellApplication {
             name = "run-dpu";
             runtimeInputs = [ pkgs.nix ];
@@ -239,6 +255,10 @@ print(f'Exported to $OUT')
           "run-server" = mkApp "${run-server}/bin/run-server" "Run the eVOLVER socket.io server.";
           "run-virtual-evolver" =
             mkApp "${run-virtual-evolver}/bin/run-virtual-evolver" "Run the eVOLVER server in virtual output mode.";
+          "run-control-plane" =
+            mkApp "${run-control-plane}/bin/run-control-plane" "Run the local eVOLVER control-plane API.";
+          "run-broadcast-ingest" =
+            mkApp "${run-broadcast-ingest}/bin/run-broadcast-ingest" "Persist live eVOLVER broadcasts as raw data.";
           "discover-devices" =
             mkApp "${discover-devices}/bin/discover-devices" "Discover connected eVOLVER serial devices.";
           "provision-device" =
