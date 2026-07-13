@@ -19,8 +19,10 @@ let
     ]
   );
 
-  # evolver Python source. Runtime launchers initialise EVOLVER_DATA_DIR so
-  # mutable state stays outside the read-only Nix store.
+  # evolver Python source, patched so all mutable file paths honour the
+  # EVOLVER_DATA_DIR environment variable.  Without this the code would resolve
+  # paths relative to __file__ (the Nix store — read-only) instead of the
+  # writable state directory.
   evolverSrc = stdenvNoCC.mkDerivation {
     pname = "evolver-src";
     version = "0.0.0";
@@ -39,6 +41,28 @@ let
 
     dontConfigure = true;
     dontBuild = true;
+
+    postPatch = ''
+      # evolver_server.py: make LOCATION (used for calibrations.json, device
+      # config, etc.) configurable via EVOLVER_DATA_DIR.
+      substituteInPlace evolver_server.py \
+        --replace-fail \
+          'LOCATION = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))' \
+          'LOCATION = os.environ.get("EVOLVER_DATA_DIR", os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__))))'
+
+      # evolver_server.py: the conf.yml *write* path uses __file__ directly;
+      # redirect it to use LOCATION (now configurable above).
+      substituteInPlace evolver_server.py \
+        --replace-fail \
+          'os.path.realpath(os.path.join(os.getcwd(),os.path.dirname(__file__), evolver.CONF_FILENAME))' \
+          'os.path.join(LOCATION, evolver.CONF_FILENAME)'
+
+      # evolver.py: the conf.yml *read* path also uses __file__; redirect it.
+      substituteInPlace evolver.py \
+        --replace-fail \
+          'os.path.realpath(os.path.join(os.getcwd(),os.path.dirname(__file__), CONF_FILENAME))' \
+          'os.path.join(os.environ.get("EVOLVER_DATA_DIR", os.path.dirname(os.path.realpath(__file__))), CONF_FILENAME)'
+    '';
 
     installPhase = ''
       runHook preInstall
@@ -86,52 +110,12 @@ let
       exec python "${evolverSrc}/share/evolver/evolver.py" "$@"
     '';
   };
-
-  runtimeDataDir = ''
-    if [ -n "''${EVOLVER_DATA_DIR:-}" ]; then
-      DATA_DIR="$EVOLVER_DATA_DIR"
-    elif [ -n "''${XDG_STATE_HOME:-}" ]; then
-      DATA_DIR="$XDG_STATE_HOME/evolver"
-    elif [ -n "''${HOME:-}" ]; then
-      DATA_DIR="$HOME/.local/state/evolver"
-    else
-      DATA_DIR="$PWD/.evolver-state"
-    fi
-    export EVOLVER_DATA_DIR="$DATA_DIR"
-    mkdir -p "$DATA_DIR"
-  '';
-
-  pythonModulePath = ''
-    export PYTHONPATH="${evolverSrc}/share:${evolverSrc}/share/evolver''${PYTHONPATH:+:$PYTHONPATH}"
-  '';
-
-  evolverControlPlane = writeShellApplication {
-    name = "evolver-control-plane";
-    runtimeInputs = [ pythonEnv ];
-    text = ''
-      ${runtimeDataDir}
-      ${pythonModulePath}
-      exec python -m evolver.control_daemon "$@"
-    '';
-  };
-
-  evolverBroadcastIngest = writeShellApplication {
-    name = "evolver-broadcast-ingest";
-    runtimeInputs = [ pythonEnv ];
-    text = ''
-      ${runtimeDataDir}
-      ${pythonModulePath}
-      exec python -m evolver.broadcast_ingest_daemon "$@"
-    '';
-  };
 in
 symlinkJoin {
   name = "evolver";
   paths = [
     evolverSrc
     evolverServer
-    evolverControlPlane
-    evolverBroadcastIngest
   ];
   meta = {
     description = "eVOLVER server — hardware control daemon for the eVOLVER continuous culture platform";

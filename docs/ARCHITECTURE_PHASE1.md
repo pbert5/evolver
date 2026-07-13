@@ -95,8 +95,6 @@ application for local clients:
 The API is intentionally thin. It delegates policy and validation to
 `ControlPlane` instead of duplicating lifecycle rules in handlers.
 
-`nix run .#run-control-plane` starts this API as a local service.
-
 ## Phase 5: Maintenance Jobs
 
 `evolver.maintenance_jobs.MaintenanceJobManager` tracks controlled one-shot
@@ -104,17 +102,14 @@ operations such as calibration, firmware flashing, provisioning, diagnostics,
 export, and sync. Jobs can require authorization before they move to `queued`,
 and every state transition can be recorded through `LocalDataService`.
 
-`nix run .#run-broadcast-ingest` subscribes to the existing eVOLVER Socket.IO
-server and persists broadcasts through the phase-2 ingestor.
-
 ## Remaining Integration Work
 
-1. Decide whether raw ingestion should remain a subscribed local client or move
-   directly inside the hardware server process.
-2. Promote `run-control-plane` and `run-broadcast-ingest` from Nix apps into
-   systemd-supervised services for dedicated console installs.
-3. Let full experiment creation workflows supply finalized runner
-   configuration to `DpuRunnerManager`.
+1. Add an adapter that converts existing server broadcasts into raw measurement
+   envelopes directly inside the running server process or beside it as a
+   subscribed local client.
+2. Connect the HTTP API to a supervised `evolver-controld` entrypoint.
+3. Let experiment creation call `DpuRunnerManager` once runner configuration is
+   finalized.
 4. Move graphing reads from experiment directories to `LocalDataService`
    streams or standardized exports.
-5. Add systemd supervision for the new processes.
+5. Add service supervision and Nix/systemd entrypoints for the new processes.

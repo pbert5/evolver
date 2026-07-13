@@ -28,12 +28,6 @@ setup(
     author_email='fjansen@bu.edu',
     url='https://github.com/FYNCH-BIO/evolver',
     packages=['evolver'],
-    entry_points={
-        'console_scripts': [
-            'evolver-control-plane=evolver.control_daemon:main',
-            'evolver-broadcast-ingest=evolver.broadcast_ingest_daemon:main',
-        ],
-    },
     install_requires=reqs,
     tests_require=test_reqs,
     test_suite='nose.collector',
