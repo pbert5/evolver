@@ -51,6 +51,23 @@ Expected behavior:
 - Broadcast payloads contain `data`, `config`, `ip`, and `timestamp`.
 - Virtual `data` includes deterministic `od_90`, `od_135`, and `temp` readings.
 
+```mermaid
+flowchart TD
+    Start[Choose workflow] --> Virtual{No hardware attached?}
+    Virtual -- yes --> VState[Use isolated EVOLVER_DATA_DIR]
+    VState --> VServer[Start run-virtual-evolver]
+    VServer --> DPU[Start run-dpu]
+    DPU --> VBroadcast[Read virtual broadcasts]
+
+    Virtual -- no --> Discover[Run discover-devices]
+    Discover --> Provision{Device provisioned?}
+    Provision -- no --> Bind[Provision device identity]
+    Provision -- yes --> HServer[Start hardware run-server]
+    Bind --> HServer
+    HServer --> DPU
+    DPU --> HBroadcast[Read hardware broadcasts]
+```
+
 ## Hardware Path: DPU Against Real Server
 
 Discover devices first:

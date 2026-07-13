@@ -79,6 +79,24 @@ virtual mode emits `fields_expected_incoming - 1` sensor values. If a parameter
 is absent from `experimental_params`, virtual mode does not include it in
 `data`.
 
+```mermaid
+flowchart LR
+    DPU[DPU or Socket.IO client] <-->|/dpu-evolver events| Server[eVOLVER server]
+    Server --> Config[Runtime conf.yml]
+    Server --> Broadcast[broadcast payload]
+    Broadcast --> DPU
+
+    subgraph Output provider
+        Hardware[Hardware mode: serial device]
+        Virtual[Virtual mode: deterministic samples]
+    end
+
+    Server --> Virtual
+    Server -. normal server mode .-> Hardware
+    Virtual --> Broadcast
+    Hardware -. hardware runs only .-> Broadcast
+```
+
 ## How It Works
 
 The runtime loop is the same loop used by the hardware server:
@@ -100,6 +118,24 @@ config and are written back to the active `conf.yml`. Immediate commands are
 queued and then drained on the next virtual broadcast cycle. Virtual mode does
 not model the physical effect of those commands; for example, pump or LED
 commands do not change later OD or temperature readings.
+
+```mermaid
+sequenceDiagram
+    participant Client as DPU or client
+    participant Server as eVOLVER server
+    participant Config as active conf.yml
+    participant Virtual as virtual output
+
+    Client->>Server: command(param, value, immediate)
+    Server->>Config: persist parameter update
+    Server-->>Client: commandbroadcast
+    loop broadcast_timing
+        Server->>Server: process queued command state
+        Server->>Virtual: virtual_broadcast_data(config)
+        Virtual-->>Server: od_90, od_135, temp samples
+        Server-->>Client: broadcast(data, config, ip, timestamp)
+    end
+```
 
 ## Interacting With It
 

@@ -21,3 +21,7 @@ Use Serena for all Python interaction. This is explicit and mandatory: navigate 
 - For Python/server changes, run `rtk pytest tests/` when relevant.
 - For Nix/package changes, run `rtk nix flake check`; after changes under `nix/`, also run `rtk nix build`.
 - Hardware tests require explicit user intent and the `--hardware` flag.
+
+## Completion
+
+- Commit completed work before reporting it done.
