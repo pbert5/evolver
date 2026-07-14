@@ -23,10 +23,13 @@ committed and pushed there first, then the parent flake lock updated here.
 
 ## Serena Tool Usage
 
-Use Serena for Python code navigation and edits.
+Use Serena for all Python code navigation, inspection, and edits. This is a
+hard requirement, not a preference.
 
-- Prefer Serena symbol tools before reading whole Python source files.
-- Use symbol-aware edits for Python symbols when possible.
+- Do not use shell text tools or ordinary file reads as the first step for
+  Python source.
+- Use Serena symbol/search tools before reading whole Python files.
+- Use Serena symbol-aware edits for Python symbols whenever they apply.
 - Use normal file tools for docs, shell scripts, Nix files, and other non-Python files.
 - Do not run hardware tests automatically.
 

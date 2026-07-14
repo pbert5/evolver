@@ -11,6 +11,8 @@
 
 Use Serena for all Python interaction. This is explicit and mandatory: navigate Python with Serena, inspect Python symbols with Serena, and make Python symbol edits with Serena whenever a symbol-aware edit applies.
 
+- Do not use shell text tools or ordinary file reads as the first step for
+  Python source. Start with Serena symbol/search tools.
 - Prefer Serena symbol tools for Python files before reading whole source files.
 - Use symbol-aware edits for Python symbols when possible.
 - Use shell tools for tests, formatting, docs, and non-Python files.
