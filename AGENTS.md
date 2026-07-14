@@ -25,3 +25,5 @@ Use Serena for all Python interaction. This is explicit and mandatory: navigate 
 ## Completion
 
 - Commit completed work before reporting it done.
+- For multi-step work, commit at meaningful step completions so each finished
+  increment has a recoverable checkpoint.
